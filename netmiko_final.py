@@ -8,9 +8,13 @@ def gigabit_status(ip_address):
 
     device_params = {
         "device_type": "cisco_ios",
-        "ip": ip_address, # ใช้ IP ที่รับมา
+        "ip": ip_address,
         "username": username,
         "password": password,
+        "optional_args": {
+            'kex_algs': ["diffie-hellman-group14-sha1"],
+            'key_algs': ["ssh-rsa"]
+        }
     }
     
     ans = ""

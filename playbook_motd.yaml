@@ -1,0 +1,16 @@
+#อันนี้สำหรับการใช้งาน MOTD
+---
+- name: Configure MOTD Banner
+  hosts: routers
+  gather_facts: false
+  connection: ansible.netcommon.network_cli
+  
+  vars:
+    ansible_network_os: cisco.ios.ios
+    
+  tasks:
+    - name: Set MOTD banner
+      cisco.ios.ios_banner:
+        banner: motd
+        text: "{{ motd_message }}" # เราจะส่งค่านี้เข้ามาจาก Python
+        state: present

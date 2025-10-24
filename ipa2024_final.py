@@ -94,28 +94,24 @@ while True:
             elif command == "netconf":
                 current_method = "netconf"
                 responseMessage = "Ok: Netconf"
-            elif command in PART1_COMMANDS:
-                if current_method is None:
-                    responseMessage = "Error: No Method specified"
+            elif command in PART1_COMMANDS or command == "gigabit_status" or command == "showrun" or command == "motd":
+                if current_method is None and command in PART1_COMMANDS:
+                    responseMessage = "Error: No method specified"
                 else:
-                    responseMessage = "Error: No IP specified"
-            # สมมติว่า gigabit_status และ showrun ก็ต้องการ IP เหมือนกัน
-            # This handles /ID gigabit_status or /ID showrun (no IP)
-            elif command == "gigabit_status" or command == "showrun":
-                 responseMessage = "Error: No IP specified"
-            # This handles /ID 10.0.15.61 (no command)
+                    responseMessage = "Error: No IP specified" # This is the main error
             elif command in VALID_IPS:
                 responseMessage = "Error: No command found."
             else:
                 responseMessage = "Error: No command or unknown command"
 
     # ตรวจสอบคำสั่งแบบ 2 ส่วนเช่น 10.0.15.61 create
-        elif len(command_parts) == 2:
+        elif len(command_parts) >= 2:
             ip_address = command_parts[0]
             command = command_parts[1]
+            args = command_parts[2:]
+            
             ip_address_used = ip_address # เก็บ IP ไว้ใช้
             command_used = command # เก็บ command ไว้ใช้
-            args = command_parts[2:]
 
             if ip_address not in VALID_IPS:
                 responseMessage = f"Error: Invalid IP address {ip_address}"
