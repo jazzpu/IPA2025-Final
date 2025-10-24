@@ -14,7 +14,7 @@ def set_motd(ip_address, message):
         'ansible-playbook',
         'playbook_motd.yaml',
         '--limit', ip_address,
-        '-e', f'motd_message={message}'
+        '-e', f'motd_message="{message}"'
     ]
 
     try:
