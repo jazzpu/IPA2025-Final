@@ -10,7 +10,7 @@ import os
 import time
 import json
 import requests
-import restconf_final, netconf_final, netmiko_final, ansible_final
+import restconf_final, netconf_final, netmiko_final, ansible_final, handle_motd
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 #######################################################################################
@@ -115,6 +115,7 @@ while True:
             command = command_parts[1]
             ip_address_used = ip_address # เก็บ IP ไว้ใช้
             command_used = command # เก็บ command ไว้ใช้
+            args = command_parts[2:]
 
             if ip_address not in VALID_IPS:
                 responseMessage = f"Error: Invalid IP address {ip_address}"
@@ -142,7 +143,19 @@ while True:
                 # เราต้องไปแก้ function ใน ansible_final ให้รับ ip_address
                 responseMessage = ansible_final.showrun(ip_address)
                 # filename = f"show_run_66070246_{ip_address_used}.txt"
-            
+
+            elif command == "motd":
+                if len(args) > 0:
+                    # Case 1: SET MOTD (มีข้อความตามหลัง)
+                    # /ID <IP> motd Authorized users only!
+                    # args = ["Authorized", "users", "only!"]
+                    motd_message = " ".join(args) # รวมกลับเป็น "Authorized users only!"
+                    responseMessage = handle_motd.set_motd(ip_address, motd_message)
+                else:
+                    # Case 2: GET MOTD (ไม่มีข้อความตามหลัง)
+                    # /ID <IP> motd
+                    responseMessage = handle_motd.get_motd(ip_address)
+
             else:
                 responseMessage = "Error: No command or unknown command"
 
