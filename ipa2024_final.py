@@ -66,7 +66,6 @@ while True:
 
     # store the array of messages
     messages = json_data["items"]
-    
     # store the text of the first message in the array
     message = messages[0]["text"]
     print("Received message: " + message)
@@ -83,8 +82,7 @@ while True:
         ip_address_used = None
         command_used = None
 
-    # Complete the logic for each command
-    # Restconf, netconf or create
+    # Complete the logic for each command Restconf, netconf or create
         if len(command_parts) == 1:
             command = command_parts[0]
             command_used = command
