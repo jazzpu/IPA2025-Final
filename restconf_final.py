@@ -1,14 +1,13 @@
 import json
 import requests
 requests.packages.urllib3.disable_warnings()
+import os
 
-ROUTER_IP = "10.0.15.61" # !!! REPLACE with your assigned Router IP !!!
-STUDENT_ID = "66070246" # !!! REPLACE with your Student ID !!!
+STUDENT_ID = os.getenv("STUDENT_ID")
 LOOPBACK_ID = f"Loopback{STUDENT_ID}"
 
-# Router IP Address is 10.0.15.181-184
-api_url = f"https://{ROUTER_IP}/restconf/data/ietf-interfaces:interfaces/interface={LOOPBACK_ID}"
-operational_url = f"https://{ROUTER_IP}/restconf/data/ietf-interfaces:interfaces-state/interface={LOOPBACK_ID}"
+# api_url = f"https://{ROUTER_IP}/restconf/data/ietf-interfaces:interfaces/interface={LOOPBACK_ID}"
+# operational_url = f"https://{ROUTER_IP}/restconf/data/ietf-interfaces:interfaces-state/interface={LOOPBACK_ID}"
 
 # the RESTCONF HTTP headers, including the Accept and Content-Type
 # Two YANG data formats (JSON and XML) work with RESTCONF 
@@ -19,7 +18,9 @@ headers = {
 basicauth = ("admin", "cisco")
 
 
-def create():
+def create(ip_address):
+    api_url = f"https://{ip_address}/restconf/data/ietf-interfaces:interfaces/interface={LOOPBACK_ID}"
+
     yangConfig ={
         "ietf-interfaces:interface": {
             "name": LOOPBACK_ID,
@@ -53,7 +54,9 @@ def create():
         return f"Error creating interface: {resp.text}"
 
 
-def delete():
+def delete(ip_address):
+    api_url = f"https://{ip_address}/restconf/data/ietf-interfaces:interfaces/interface={LOOPBACK_ID}"
+   
     resp = requests.delete(
         api_url, 
         auth=basicauth,
@@ -69,7 +72,9 @@ def delete():
         return f"Cannot delete: Interface {LOOPBACK_ID}"
 
 
-def enable():
+def enable(ip_address):
+    api_url = f"https://{ip_address}/restconf/data/ietf-interfaces:interfaces/interface={LOOPBACK_ID}"
+
     yangConfig = yangConfig = {
         "ietf-interfaces:interface": {
             "enabled": True
@@ -92,7 +97,9 @@ def enable():
         return f"Cannot enable: Interface {LOOPBACK_ID}"
 
 
-def disable():
+def disable(ip_address):
+    api_url = f"https://{ip_address}/restconf/data/ietf-interfaces:interfaces/interface={LOOPBACK_ID}"
+
     yangConfig = {
         "ietf-interfaces:interface": {
             "enabled": False
@@ -115,7 +122,9 @@ def disable():
         return f"Cannot shutdown: Interface {LOOPBACK_ID}"
 
 
-def status():
+def status(ip_address):
+    operational_url = f"https://{ip_address}/restconf/data/ietf-interfaces:interfaces-state/interface={LOOPBACK_ID}"
+    
     resp = requests.get(
         operational_url,
         auth=basicauth,

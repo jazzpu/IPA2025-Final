@@ -1,14 +1,87 @@
 from ncclient import manager
 import xmltodict
-m = manager.connect(
-    host="10.0.15.61",
-    port=830,
-    username="admin",
-    password="cisco",
-    hostkey_verify=False
-    )
+import json
+import os
 
-def create():
+STUDENT_ID = os.getenv('STUDENT_ID') 
+LOOPBACK_IP = "172.3.25.1" # IP ที่คำนวณได้จาก Student ID
+LOOPBACK_ID = f"Loopback{STUDENT_ID}"
+LOOPBACK_NETMASK = "255.255.255.0"
+
+def netconf_edit_config(m, netconf_config):
+    return  m.edit_config(target="running", config=netconf_config)
+
+def create(ip_address):
+    # ---!!! IPA2025: สร้าง Connection ภายในฟังก์ชัน
+    with manager.connect(
+        host=ip_address,
+        port=830,
+        username="admin",
+        password="cisco",
+        hostkey_verify=False
+    ) as m:
+    # ---!!!
+
+        # สร้าง XML payload
+        netconf_config = f"""
+        <config>
+          <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+            <interface>
+              <name>{LOOPBACK_ID}</name>
+              <description>Configured by NETCONF</description>
+              <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:softwareLoopback</type>
+              <enabled>true</enabled>
+              <ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip">
+                <address>
+                  <ip>{LOOPBACK_IP}</ip>
+                  <netmask>{LOOPBACK_NETMASK}</netmask>
+                </address>
+              </ipv4>
+            </interface>
+          </interfaces>
+        </config>
+        """
+
+        try:
+            netconf_reply = netconf_edit_config(m, netconf_config)
+            xml_data = netconf_reply.xml
+            print(xml_data)
+            if '<ok/>' in xml_data:
+                return f"Hallelujah, You successfully created Interface {LOOPBACK_ID} !"
+        except Exception as e:
+            print(f"Error: {e}")
+            return f"Error creating interface: {e}"
+
+
+def delete(ip_address):
+    with manager.connect(
+        host=ip_address, 
+        port=830, 
+        username="admin",
+        password="cisco", 
+        hostkey_verify=False
+    ) as m:
+        
+        # XML payload สำหรับลบ (ใช้ operation="delete")
+        netconf_config = f"""
+        <config>
+          <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+            <interface operation="delete">
+              <name>{LOOPBACK_ID}</name>
+            </interface>
+          </interfaces>
+        </config>
+        """
+
+        try:
+            netconf_reply = netconf_edit_config(m, netconf_config)
+            xml_data = netconf_reply.xml
+            print(xml_data)
+            if '<ok/>' in xml_data:
+                return f"Yay! successfully deleted Interface {LOOPBACK_ID}"
+        except Exception as e:
+            print(f"Error: {e}")
+            return f"Cannot delete: Interface {LOOPBACK_ID}"
     netconf_config = """<!!!REPLACEME with YANG data!!!>"""
 
     try:
@@ -21,67 +94,103 @@ def create():
         print("Error!")
 
 
-def delete():
-    netconf_config = """<!!!REPLACEME with YANG data!!!>"""
+def enable(ip_address):
+    with manager.connect(
+        host=ip_address, port=830, username="admin",
+        password="cisco", hostkey_verify=False
+    ) as m:
 
-    try:
-        netconf_reply = netconf_edit_config(netconf_config)
-        xml_data = netconf_reply.xml
-        print(xml_data)
-        if '<ok/>' in xml_data:
-            return "<!!!REPLACEME with proper message!!!>"
-    except:
-        print("Error!")
+        # XML payload สำหรับ merge (แก้แค่ enabled)
+        netconf_config = f"""
+        <config>
+          <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+            <interface>
+              <name>{LOOPBACK_ID}</name>
+              <enabled>true</enabled>
+            </interface>
+          </interfaces>
+        </config>
+        """
 
-
-def enable():
-    netconf_config = """<!!!REPLACEME with YANG data!!!>"""
-
-    try:
-        netconf_reply = netconf_edit_config(netconf_config)
-        xml_data = netconf_reply.xml
-        print(xml_data)
-        if '<ok/>' in xml_data:
-            return "<!!!REPLACEME with proper message!!!>"
-    except:
-        print("Error!")
-
-
-def disable():
-    netconf_config = """<!!!REPLACEME with YANG data!!!>"""
-
-    try:
-        netconf_reply = netconf_edit_config(netconf_config)
-        xml_data = netconf_reply.xml
-        print(xml_data)
-        if '<ok/>' in xml_data:
-            return "<!!!REPLACEME with proper message!!!>"
-    except:
-        print("Error!")
-
-def netconf_edit_config(netconf_config):
-    return  m.<!!!REPLACEME with the proper Netconf operation!!!>(target="<!!!REPLACEME with NETCONF Datastore!!!>", config=<!!!REPLACEME with netconf_config!!!>)
+        try:
+            netconf_reply = netconf_edit_config(m, netconf_config)
+            xml_data = netconf_reply.xml
+            print(xml_data)
+            if '<ok/>' in xml_data:
+                return f"Interface {LOOPBACK_ID} is enabled successfully :D"
+        except Exception as e:
+            print(f"Error: {e}")
+            return f"Cannot enable: Interface {LOOPBACK_ID}"
 
 
-def status():
-    netconf_filter = """<!!!REPLACEME with YANG data!!!>"""
+def disable(ip_address):
+    with manager.connect(
+        host=ip_address, port=830, username="admin",
+        password="cisco", hostkey_verify=False
+    ) as m:
 
-    try:
-        # Use Netconf operational operation to get interfaces-state information
-        netconf_reply = m.<!!!REPLACEME with the proper Netconf operation!!!>(filter=<!!!REPLACEME with netconf_filter!!!>)
-        print(netconf_reply)
-        netconf_reply_dict = xmltodict.<!!!REPLACEME with the proper method!!!>(netconf_reply.xml)
+        netconf_config = f"""
+        <config>
+          <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+            <interface>
+              <name>{LOOPBACK_ID}</name>
+              <enabled>false</enabled>
+            </interface>
+          </interfaces>
+        </config>
+        """
 
-        # if there data return from netconf_reply_dict is not null, the operation-state of interface loopback is returned
-        if <!!!REPLACEME with the proper condition!!!>:
-            # extract admin_status and oper_status from netconf_reply_dict
-            admin_status = <!!!REPLACEME!!!>
-            oper_status = <!!!REPLACEME !!!>
-            if admin_status == 'up' and oper_status == 'up':
-                return "<!!!REPLACEME with proper message!!!>"
-            elif admin_status == 'down' and oper_status == 'down':
-                return "<!!!REPLACEME with proper message!!!>"
-        else: # no operation-state data
-            return "<!!!REPLACEME with proper message!!!>"
-    except:
-       print("Error!")
+        try:
+            netconf_reply = netconf_edit_config(m, netconf_config)
+            xml_data = netconf_reply.xml
+            print(xml_data)
+            if '<ok/>' in xml_data:
+                return f"Interface {LOOPBACK_ID} is now down :P"
+        except Exception as e:
+            print(f"Error: {e}")
+            return f"Cannot shutdown: Interface {LOOPBACK_ID}"
+
+def status(ip_address):
+    with manager.connect(
+        host=ip_address, port=830, username="admin",
+        password="cisco", hostkey_verify=False
+    ) as m:
+    
+        # Filter XML สำหรับ <get> operational data (interfaces-state)
+        netconf_filter = f"""
+        <filter type="subtree">
+          <interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces-state">
+            <interface>
+              <name>{LOOPBACK_ID}</name>
+            </interface>
+          </interfaces-state>
+        </filter>
+        """
+
+        try:
+            # ใช้ m.get()
+            netconf_reply = m.get(filter=netconf_filter)
+            print(netconf_reply)
+            
+            # ใช้ xmltodict.parse()
+            netconf_reply_dict = xmltodict.parse(netconf_reply.xml)
+
+            # เช็คว่ามี data.interfaces-state.interface หรือไม่
+            interface_data = netconf_reply_dict.get("data", {}).get("interfaces-state", {}).get("interface")
+
+            if interface_data:
+                admin_status = interface_data.get("admin-status")
+                oper_status = interface_data.get("oper-status")
+                
+                if admin_status == 'up' and oper_status == 'up':
+                    return f"Interface {LOOPBACK_ID} is enabled"
+                elif admin_status == 'down' and oper_status == 'down':
+                    return f"Interface {LOOPBACK_ID} is disabled"
+                else:
+                    return f"Interface {LOOPBACK_ID} status is {admin_status}/{oper_status}"
+            else: # ไม่มี data
+                return f"No Interface {LOOPBACK_ID}"
+        except Exception as e:
+           print(f"Error: {e}")
+           return f"Error checking status: {e}"
+        

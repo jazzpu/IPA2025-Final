@@ -7,14 +7,11 @@
 # 1. Import libraries for API requests, JSON formatting, time, os, (restconf_final or netconf_final), netmiko_final, and ansible_final.
 
 import os
-# from dotenv import load_dotenv <---- Import this if you want to use .env file!
 import time
 import json
 import requests
 import restconf_final, netconf_final, netmiko_final, ansible_final
 from requests_toolbelt.multipart.encoder import MultipartEncoder
-
-# load_dotenv() for using dotenv
 
 #######################################################################################
 # 2. Assign the Webex access token to the variable ACCESS_TOKEN using environment variables.
@@ -86,70 +83,69 @@ while True:
         ip_address_used = None
         command_used = None
 
-        print(f"Executing command: {command}")
-
-# 5. Complete the logic for each command
-# Restconf, netconf or create
-    if len(command_parts) == 1:
-        command = command_parts[0]
-        command_used = command
-        
-        if command == "restconf":
-            current_method = "restconf"
-            responseMessage = "Ok: Restconf"
-        elif command == "netconf":
-            current_method = "netconf"
-            responseMessage = "Ok: Netconf"
-        elif command in PART1_COMMANDS:
-            if current_method is None:
-                responseMessage = "Error: No method specified"
+    # Complete the logic for each command
+    # Restconf, netconf or create
+        if len(command_parts) == 1:
+            command = command_parts[0]
+            command_used = command
+            
+            if command == "restconf":
+                current_method = "restconf"
+                responseMessage = "Ok: Restconf"
+            elif command == "netconf":
+                current_method = "netconf"
+                responseMessage = "Ok: Netconf"
+            elif command in PART1_COMMANDS:
+                if current_method is None:
+                    responseMessage = "Error: No method specified"
+                else:
+                    responseMessage = "Error: No IP specified"
+            # สมมติว่า gigabit_status และ showrun ก็ต้องการ IP เหมือนกัน
+            elif command == "gigabit_status" or command == "showrun":
+                    responseMessage = "Error: No IP specified"
             else:
-                responseMessage = "Error: No IP specified"
-        # สมมติว่า gigabit_status และ showrun ก็ต้องการ IP เหมือนกัน
-        elif command == "gigabit_status" or command == "showrun":
-                responseMessage = "Error: No IP specified"
+                responseMessage = "Error: No command or unknown command"
+
+    # ตรวจสอบคำสั่งแบบ 2 ส่วนเช่น 10.0.15.61 create
+        elif len(command_parts) == 2:
+            ip_address = command_parts[0]
+            command = command_parts[1]
+            ip_address_used = ip_address # เก็บ IP ไว้ใช้
+            command_used = command # เก็บ command ไว้ใช้
+
+            if ip_address not in VALID_IPS:
+                responseMessage = f"Error: Invalid IP address {ip_address}"
+            
+            # คำสั่งกลุ่ม 1 (Restconf/Netconf)
+            elif command in PART1_COMMANDS:
+                if current_method is None:
+                    responseMessage = "Error: No method specified"
+                elif current_method == "restconf":
+                    # เราต้องไปแก้ function ใน restconf_final ให้รับ ip_address
+                    func = getattr(restconf_final, command)
+                    responseMessage = func(ip_address)
+                elif current_method == "netconf":
+                    # เราต้องไปแก้ function ใน netconf_final ให้รับ ip_address
+                    func = getattr(netconf_final, command)
+                    responseMessage = func(ip_address)
+
+            # คำสั่งกลุ่ม 2 (Netmiko)
+            elif command == "gigabit_status":
+                # เราต้องไปแก้ function ใน netmiko_final ให้รับ ip_address
+                responseMessage = netmiko_final.gigabit_status(ip_address)
+            
+            # คำสั่งกลุ่ม 3 (Ansible)
+            elif command == "showrun" and responseMessage == "ok":
+                # เราต้องไปแก้ function ใน ansible_final ให้รับ ip_address
+                responseMessage = ansible_final.showrun(ip_address)
+                # filename = f"show_run_66070246_{ip_address_used}.txt"
+            
+            else:
+                responseMessage = "Error: No command or unknown command"
+
+    # กรณีอื่นๆ
         else:
-            responseMessage = "Error: No command or unknown command"
-
-# ตรวจสอบคำสั่งแบบ 2 ส่วนเช่น 10.0.15.61 create
-    elif len(command_parts) == 2:
-        ip_address = command_parts[0]
-        command = command_parts[1]
-        ip_address_used = ip_address # เก็บ IP ไว้ใช้
-        command_used = command # เก็บ command ไว้ใช้
-
-        if ip_address not in VALID_IPS:
-            responseMessage = f"Error: Invalid IP address {ip_address}"
-        
-        # คำสั่งกลุ่ม 1 (Restconf/Netconf)
-        elif command in PART1_COMMANDS:
-            if current_method is None:
-                responseMessage = "Error: No method specified"
-            elif current_method == "restconf":
-                # เราต้องไปแก้ function ใน restconf_final ให้รับ ip_address
-                func = getattr(restconf_final, command)
-                responseMessage = func(ip_address)
-            elif current_method == "netconf":
-                # เราต้องไปแก้ function ใน netconf_final ให้รับ ip_address
-                func = getattr(netconf_final, command)
-                responseMessage = func(ip_address)
-
-        # คำสั่งกลุ่ม 2 (Netmiko)
-        elif command == "gigabit_status":
-            # เราต้องไปแก้ function ใน netmiko_final ให้รับ ip_address
-            responseMessage = netmiko_final.gigabit_status(ip_address)
-        
-        # คำสั่งกลุ่ม 3 (Ansible)
-        elif command == "showrun":
-            # เราต้องไปแก้ function ใน ansible_final ให้รับ ip_address
-            responseMessage = ansible_final.showrun(ip_address)
-        
-        else:
-            responseMessage = "Error: No command or unknown command"
-
-# กรณีอื่นๆ
-    else:
-        responseMessage = "Error: Invalid command format"
+            responseMessage = "Error: Invalid command format"
 
 # 6. Complete the code to post the message to the Webex Teams room.
 
