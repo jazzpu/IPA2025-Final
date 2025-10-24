@@ -1,0 +1,21 @@
+---
+- name: Backup running config for IPA Final
+  hosts: ExamRouter
+  gather_facts: false
+  connection: ansible.netcommon.network_cli
+
+  vars:
+    ansible_network_os: cisco.ios.ios
+
+  tasks:
+    - name: Get running-config from device
+      cisco.ios.ios_command:
+        commands:
+          - show run
+      register: config
+
+    - name: Save running-config to local file
+      ansible.builtin.copy:
+        content: "{{ config.stdout[0] }}"
+        dest: "show_run_66070246_R1-Exam.txt"
+      delegate_to: localhost
