@@ -1,8 +1,8 @@
 Building configuration...
 
-Current configuration : 5929 bytes
+Current configuration : 6096 bytes
 !
-! Last configuration change at 14:52:46 UTC Fri Oct 24 2025 by NETCONF
+! Last configuration change at 16:04:49 UTC Fri Oct 24 2025 by NETCONF
 !
 version 16.9
 service config
@@ -187,8 +187,8 @@ interface Loopback66070124
  ip address 172.1.24.1 255.255.255.0
 !
 interface Loopback66070200
+ description My RESTCONF loopback
  ip address 172.2.0.1 255.255.255.0
- shutdown
 !
 interface Loopback66070216
  ip address 172.2.16.1 255.255.255.0
@@ -198,6 +198,13 @@ interface Loopback66070217
 !
 interface Loopback66070218
  ip address 10.2.18.1 255.255.255.0
+ shutdown
+!
+interface Loopback66070220
+ ip address 172.2.20.1 255.255.255.0
+!
+interface Loopback66070221
+ ip address 172.2.21.1 255.255.255.0
 !
 interface Loopback66070238
  ip address 172.2.38.1 255.255.255.0
@@ -209,6 +216,10 @@ interface Loopback66070239
 interface Loopback66070244
  ip address 172.2.44.1 255.255.255.0
 !
+interface Loopback66070246
+ description Configured by NETCONF
+ ip address 172.3.25.1 255.255.255.0
+!
 interface Loopback66070247
  description Loopback interface for 66070247
  no ip address
@@ -218,16 +229,13 @@ interface Loopback66070273
  description Loopback created by NETCONF (native)
  ip address 172.2.73.1 255.255.255.0
 !
-interface Loopback66070291
- description Created by NPA2024 Final Bot
- ip address 172.2.91.1 255.255.255.0
-!
 interface Loopback66070305
  ip address 172.30.5.1 255.255.255.0
 !
 interface Loopback66070315
  description Student 66070315 loopback
  ip address 172.3.15.1 255.255.255.0
+ shutdown
 !
 interface GigabitEthernet1
  ip address 10.0.15.61 255.255.255.0
@@ -254,9 +262,7 @@ control-plane
 !
 !
 !
-banner motd ^C
-Authorized users only! Managed by 66070247
-^C
+banner motd ^CAuthorized users only! Managed by 66070221^C
 !
 line con 0
  stopbits 1

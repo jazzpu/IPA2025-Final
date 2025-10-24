@@ -66,6 +66,7 @@ while True:
 
     # store the array of messages
     messages = json_data["items"]
+    
     # store the text of the first message in the array
     message = messages[0]["text"]
     print("Received message: " + message)

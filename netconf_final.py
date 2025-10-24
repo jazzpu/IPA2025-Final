@@ -47,10 +47,10 @@ def create(ip_address):
             xml_data = netconf_reply.xml
             print(xml_data)
             if '<ok/>' in xml_data:
-                return f"Hallelujah, You successfully created Interface {LOOPBACK_ID} !"
+                return f"Hallelujah, You successfully created Interface {LOOPBACK_ID} ! (using netconfig)"
         except Exception as e:
             print(f"Error: {e}")
-            return f"Error creating interface: {e}"
+            return f"Error creating interface: {e} (using netconfig)"
 
 
 def delete(ip_address):
@@ -78,10 +78,10 @@ def delete(ip_address):
             xml_data = netconf_reply.xml
             print(xml_data)
             if '<ok/>' in xml_data:
-                return f"Yay! successfully deleted Interface {LOOPBACK_ID}"
+                return f"Yay! successfully deleted Interface {LOOPBACK_ID} (using netconfig)"
         except Exception as e:
             print(f"Error: {e}")
-            return f"Cannot delete: Interface {LOOPBACK_ID}"
+            return f"Cannot delete: Interface {LOOPBACK_ID} (using netconfig)"
     netconf_config = """<!!!REPLACEME with YANG data!!!>"""
 
     try:
@@ -89,7 +89,7 @@ def delete(ip_address):
         xml_data = netconf_reply.xml
         print(xml_data)
         if '<ok/>' in xml_data:
-            return "<!!!REPLACEME with proper message!!!>"
+            return "There are no errors inside xml from netconf"
     except:
         print("Error!")
 
@@ -117,10 +117,10 @@ def enable(ip_address):
             xml_data = netconf_reply.xml
             print(xml_data)
             if '<ok/>' in xml_data:
-                return f"Interface {LOOPBACK_ID} is enabled successfully :D"
+                return f"Interface {LOOPBACK_ID} is enabled successfully :D (using netconfig)"
         except Exception as e:
             print(f"Error: {e}")
-            return f"Cannot enable: Interface {LOOPBACK_ID}"
+            return f"Cannot enable: Interface {LOOPBACK_ID} (using netconfig)"
 
 
 def disable(ip_address):
@@ -145,10 +145,10 @@ def disable(ip_address):
             xml_data = netconf_reply.xml
             print(xml_data)
             if '<ok/>' in xml_data:
-                return f"Interface {LOOPBACK_ID} is now down :P"
+                return f"Interface {LOOPBACK_ID} is now down :P (using netconfig)"
         except Exception as e:
             print(f"Error: {e}")
-            return f"Cannot shutdown: Interface {LOOPBACK_ID}"
+            return f"Cannot shutdown: Interface {LOOPBACK_ID} (using netconfig)"
 
 def status(ip_address):
     with manager.connect(
@@ -183,19 +183,19 @@ def status(ip_address):
                 if isinstance(interface_data, list):
                     # ถ้าเป็น list (อาจจะเกิดถ้า filter กว้างไป) ให้เอาตัวแรก
                     interface_data = interface_data[0]
-                    
+
                 admin_status = interface_data.get("admin-status")
                 oper_status = interface_data.get("oper-status")
                 
                 if admin_status == 'up' and oper_status == 'up':
-                    return f"Interface {LOOPBACK_ID} is enabled"
+                    return f"Interface {LOOPBACK_ID} is enabled (using netconfig)"
                 elif admin_status == 'down' and oper_status == 'down':
-                    return f"Interface {LOOPBACK_ID} is disabled"
+                    return f"Interface {LOOPBACK_ID} is disabled (using netconfig)"
                 else:
-                    return f"Interface {LOOPBACK_ID} status is {admin_status}/{oper_status}"
+                    return f"Interface {LOOPBACK_ID} status is {admin_status}/{oper_status} (using netconfig)"
             else: # ไม่มี data
-                return f"No Interface {LOOPBACK_ID}"
+                return f"No Interface {LOOPBACK_ID} (using netconfig)"
         except Exception as e:
            print(f"Error: {e}")
-           return f"Error checking status: {e}"
+           return f"Error checking status: {e} (using netconfig)"
         

@@ -48,7 +48,7 @@ def create(ip_address):
 
     if(resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
-        return f"Hallelujah, You successfully created Interface {LOOPBACK_ID} !"
+        return f"Hallelujah, You successfully created Interface {LOOPBACK_ID} (using restconfig)!"
     else:
         print('Yikes, looks like it failed. Status Code: {}'.format(resp.status_code))
         return f"Error creating interface: {resp.text}"
@@ -66,10 +66,10 @@ def delete(ip_address):
 
     if(resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
-        return f"Yay! successfully deleted Interface {LOOPBACK_ID}"
+        return f"Yay! successfully deleted Interface {LOOPBACK_ID} (using restconfig)"
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
-        return f"Cannot delete: Interface {LOOPBACK_ID}"
+        return f"Cannot delete: Interface {LOOPBACK_ID} (using restconfig)"
 
 
 def enable(ip_address):
@@ -91,10 +91,10 @@ def enable(ip_address):
 
     if(resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
-        return f"Interface {LOOPBACK_ID} is enabled successfully :D"
+        return f"Interface {LOOPBACK_ID} is enabled successfully :D (using restconfig)"
     else:
         print(f'Error. Status Code: {resp.status_code}')
-        return f"Cannot enable: Interface {LOOPBACK_ID}"
+        return f"Cannot enable: Interface {LOOPBACK_ID} (using restconfig)"
 
 
 def disable(ip_address):
@@ -116,10 +116,10 @@ def disable(ip_address):
 
     if(resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
-        return f"Interface {LOOPBACK_ID} is now down :P"
+        return f"Interface {LOOPBACK_ID} is now down :P (using restconfig)"
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
-        return f"Cannot shutdown: Interface {LOOPBACK_ID}"
+        return f"Cannot shutdown: Interface {LOOPBACK_ID} (using restconfig)"
 
 
 def status(ip_address):
@@ -140,12 +140,12 @@ def status(ip_address):
         oper_status = response_json["ietf-interfaces:interface"]["oper-status"]
 
         if admin_status == 'up' and oper_status == 'up':
-            return f"Interface {LOOPBACK_ID} is enabled"
+            return f"Interface {LOOPBACK_ID} is enabled (using restconfig)"
         elif admin_status == 'down' and oper_status == 'down':
-            return f"Interface {LOOPBACK_ID} is disabled"
+            return f"Interface {LOOPBACK_ID} is disabled (using restconfig)"
     elif resp.status_code == 404: # 404 Not Found
         print(f"STATUS NOT FOUND: {resp.status_code}")
-        return f"No Interface {LOOPBACK_ID}"
+        return f"No Interface {LOOPBACK_ID} (using restconfig)"
     else:
         print(f'Error. Status Code: {resp.status_code}')
-        return f"Error checking status: {resp.text}"
+        return f"Error checking status: {resp.text} (using restconfig)"
