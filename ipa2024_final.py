@@ -11,7 +11,7 @@ import os
 import time
 import json
 import requests
-import restconf_final, netmiko_final, ansible_final
+import restconf_final, netconf_final, netmiko_final, ansible_final
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 # load_dotenv() for using dotenv
@@ -27,6 +27,10 @@ ACCESS_TOKEN = os.getenv('WEBEX_ACCESS_TOKEN')
 # Defines a variable that will hold the roomId
 roomIdToGetMessages = os.getenv('ROOM_ID')
 MY_STUDENT_ID = os.getenv('STUDENT_ID')
+
+current_method = None
+VALID_IPS = ["10.0.15.61", "10.0.15.62", "10.0.15.63", "10.0.15.64", "10.0.15.65"]
+PART1_COMMANDS = ["create", "delete", "enable", "disable", "status"]
 
 while True:
     # always add 1 second of delay to the loop to not go over a rate limit of API calls
@@ -75,29 +79,78 @@ while True:
     if message.startswith(f"/{MY_STUDENT_ID}"):
 
         # extract the command
-        command = message.split(" ")[1]
+        parts = message.split(" ")
+        command_parts = parts[1:] #takes out the /<ID>
+
+        responseMessage = ""
+        ip_address_used = None
+        command_used = None
+
         print(f"Executing command: {command}")
-        responseMessage=""
 
 # 5. Complete the logic for each command
-
-        if command == "create":
-            responseMessage = restconf_final.create()
-        elif command == "delete":
-            responseMessage = restconf_final.delete()
-        elif command == "enable":
-            responseMessage = restconf_final.enable()
-        elif command == "disable":
-            responseMessage = restconf_final.disable()
-        elif command == "status":
-            responseMessage = restconf_final.status()
-        elif command == "gigabit_status":
-            responseMessage = netmiko_final.gigabit_status()
-        elif command == "showrun":
-            responseMessage = ansible_final.showrun()
+# Restconf, netconf or create
+    if len(command_parts) == 1:
+        command = command_parts[0]
+        command_used = command
+        
+        if command == "restconf":
+            current_method = "restconf"
+            responseMessage = "Ok: Restconf"
+        elif command == "netconf":
+            current_method = "netconf"
+            responseMessage = "Ok: Netconf"
+        elif command in PART1_COMMANDS:
+            if current_method is None:
+                responseMessage = "Error: No method specified"
+            else:
+                responseMessage = "Error: No IP specified"
+        # สมมติว่า gigabit_status และ showrun ก็ต้องการ IP เหมือนกัน
+        elif command == "gigabit_status" or command == "showrun":
+                responseMessage = "Error: No IP specified"
         else:
             responseMessage = "Error: No command or unknown command"
+
+# ตรวจสอบคำสั่งแบบ 2 ส่วนเช่น 10.0.15.61 create
+    elif len(command_parts) == 2:
+        ip_address = command_parts[0]
+        command = command_parts[1]
+        ip_address_used = ip_address # เก็บ IP ไว้ใช้
+        command_used = command # เก็บ command ไว้ใช้
+
+        if ip_address not in VALID_IPS:
+            responseMessage = f"Error: Invalid IP address {ip_address}"
         
+        # คำสั่งกลุ่ม 1 (Restconf/Netconf)
+        elif command in PART1_COMMANDS:
+            if current_method is None:
+                responseMessage = "Error: No method specified"
+            elif current_method == "restconf":
+                # เราต้องไปแก้ function ใน restconf_final ให้รับ ip_address
+                func = getattr(restconf_final, command)
+                responseMessage = func(ip_address)
+            elif current_method == "netconf":
+                # เราต้องไปแก้ function ใน netconf_final ให้รับ ip_address
+                func = getattr(netconf_final, command)
+                responseMessage = func(ip_address)
+
+        # คำสั่งกลุ่ม 2 (Netmiko)
+        elif command == "gigabit_status":
+            # เราต้องไปแก้ function ใน netmiko_final ให้รับ ip_address
+            responseMessage = netmiko_final.gigabit_status(ip_address)
+        
+        # คำสั่งกลุ่ม 3 (Ansible)
+        elif command == "showrun":
+            # เราต้องไปแก้ function ใน ansible_final ให้รับ ip_address
+            responseMessage = ansible_final.showrun(ip_address)
+        
+        else:
+            responseMessage = "Error: No command or unknown command"
+
+# กรณีอื่นๆ
+    else:
+        responseMessage = "Error: Invalid command format"
+
 # 6. Complete the code to post the message to the Webex Teams room.
 
         # The Webex Teams POST JSON data for command showrun
@@ -114,7 +167,7 @@ while True:
         # Decide what to do based on the command and the response from the module
         if command == "showrun" and responseMessage == "ok":
             # This block handles sending the backup file
-            filename = "show_run_66070246_R1-Exam.txt"
+            filename = f"show_run_66070246_{ip_address_used}.txt"
             try:
                 # Open the file in binary read mode
                 fileobject = open(filename, "rb")
@@ -122,7 +175,7 @@ while True:
                 # Use MultipartEncoder to package the file and text together
                 postData = MultipartEncoder({
                     "roomId": roomIdToGetMessages,
-                    "text": "Show running config from R1-Exam",
+                    "text": f"Show running config from {ip_address_used}",
                     "files": (filename, fileobject, "text/plain"),
                 })
 
