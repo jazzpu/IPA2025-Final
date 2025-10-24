@@ -158,7 +158,7 @@ def status(ip_address):
     
         # Filter XML สำหรับ <get> operational data (interfaces-state)
         netconf_filter = f"""
-        <filter type="subtree">
+        <filter>
           <interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces-state">
             <interface>
               <name>{LOOPBACK_ID}</name>
@@ -179,6 +179,11 @@ def status(ip_address):
             interface_data = netconf_reply_dict.get("data", {}).get("interfaces-state", {}).get("interface")
 
             if interface_data:
+                # ตรวจสอบว่าได้ list หรือ dict
+                if isinstance(interface_data, list):
+                    # ถ้าเป็น list (อาจจะเกิดถ้า filter กว้างไป) ให้เอาตัวแรก
+                    interface_data = interface_data[0]
+                    
                 admin_status = interface_data.get("admin-status")
                 oper_status = interface_data.get("oper-status")
                 

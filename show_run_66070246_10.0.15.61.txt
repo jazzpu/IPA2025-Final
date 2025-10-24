@@ -1,8 +1,8 @@
 Building configuration...
 
-Current configuration : 3584 bytes
+Current configuration : 5929 bytes
 !
-! Last configuration change at 11:30:01 UTC Thu Oct 23 2025 by NETCONF
+! Last configuration change at 14:52:46 UTC Fri Oct 24 2025 by NETCONF
 !
 version 16.9
 service config
@@ -131,8 +131,103 @@ redundancy
 ! 
 !
 !
-interface Loopback66070046
- ip address 192.168.46.1 255.255.255.0
+interface Loopback1
+ description My first NETCONF loopback
+ ip address 172.0.41.1 255.255.255.0
+!
+interface Loopback64070017
+ description Created by 64070017
+ ip address 172.0.17.1 255.255.255.0
+!
+interface Loopback65070030
+ ip address 172.30.30.1 255.255.255.0
+!
+interface Loopback66070001
+ description Managed by IPA2024 Bot - 66070001
+ ip address 172.0.1.1 255.255.255.0
+!
+interface Loopback66070006
+ description Loopback for 66070006
+ ip address 172.0.6.1 255.255.255.0
+ shutdown
+!
+interface Loopback66070024
+ description Interface for student 66070024
+ ip address 172.0.24.1 255.255.255.0
+!
+interface Loopback66070039
+ description Created by student 66070039
+ ip address 172.0.39.1 255.255.255.0
+!
+interface Loopback66070055
+ ip address 172.0.55.1 255.255.255.0
+!
+interface Loopback66070069
+ description Router ID
+ ip address 172.0.69.1 255.255.255.0
+ shutdown
+!
+interface Loopback66070084
+ ip address 172.0.84.1 255.255.255.0
+!
+interface Loopback66070107
+ description Configured by RESTCONF
+ ip address 172.1.7.1 255.255.255.0
+!
+interface Loopback66070118
+ description Managed by IPA2024 Bot - 66070001
+ ip address 172.1.18.1 255.255.255.0
+!
+interface Loopback66070119
+ description loopback for 66070119
+ ip address 172.1.19.1 255.255.255.0
+!
+interface Loopback66070124
+ description Created by NETCONF
+ ip address 172.1.24.1 255.255.255.0
+!
+interface Loopback66070200
+ ip address 172.2.0.1 255.255.255.0
+ shutdown
+!
+interface Loopback66070216
+ ip address 172.2.16.1 255.255.255.0
+!
+interface Loopback66070217
+ ip address 172.2.17.1 255.255.255.0
+!
+interface Loopback66070218
+ ip address 10.2.18.1 255.255.255.0
+!
+interface Loopback66070238
+ ip address 172.2.38.1 255.255.255.0
+!
+interface Loopback66070239
+ description Loopback for student 66070239
+ ip address 172.2.39.1 255.255.255.0
+!
+interface Loopback66070244
+ ip address 172.2.44.1 255.255.255.0
+!
+interface Loopback66070247
+ description Loopback interface for 66070247
+ no ip address
+ shutdown
+!
+interface Loopback66070273
+ description Loopback created by NETCONF (native)
+ ip address 172.2.73.1 255.255.255.0
+!
+interface Loopback66070291
+ description Created by NPA2024 Final Bot
+ ip address 172.2.91.1 255.255.255.0
+!
+interface Loopback66070305
+ ip address 172.30.5.1 255.255.255.0
+!
+interface Loopback66070315
+ description Student 66070315 loopback
+ ip address 172.3.15.1 255.255.255.0
 !
 interface GigabitEthernet1
  ip address 10.0.15.61 255.255.255.0
@@ -159,6 +254,9 @@ control-plane
 !
 !
 !
+banner motd ^C
+Authorized users only! Managed by 66070247
+^C
 !
 line con 0
  stopbits 1

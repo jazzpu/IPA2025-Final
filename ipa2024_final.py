@@ -97,12 +97,16 @@ while True:
                 responseMessage = "Ok: Netconf"
             elif command in PART1_COMMANDS:
                 if current_method is None:
-                    responseMessage = "Error: No method specified"
+                    responseMessage = "Error: No Method specified"
                 else:
                     responseMessage = "Error: No IP specified"
             # สมมติว่า gigabit_status และ showrun ก็ต้องการ IP เหมือนกัน
+            # This handles /ID gigabit_status or /ID showrun (no IP)
             elif command == "gigabit_status" or command == "showrun":
-                    responseMessage = "Error: No IP specified"
+                 responseMessage = "Error: No IP specified"
+            # This handles /ID 10.0.15.61 (no command)
+            elif command in VALID_IPS:
+                responseMessage = "Error: No command found."
             else:
                 responseMessage = "Error: No command or unknown command"
 
@@ -135,7 +139,7 @@ while True:
                 responseMessage = netmiko_final.gigabit_status(ip_address)
             
             # คำสั่งกลุ่ม 3 (Ansible)
-            elif command == "showrun" and responseMessage == "ok":
+            elif command == "showrun":
                 # เราต้องไปแก้ function ใน ansible_final ให้รับ ip_address
                 responseMessage = ansible_final.showrun(ip_address)
                 # filename = f"show_run_66070246_{ip_address_used}.txt"
